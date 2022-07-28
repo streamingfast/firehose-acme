@@ -99,7 +99,14 @@ func newContext(logger *zap.Logger, height uint64) *parseCtx {
 	}
 }
 
+var firstBlock = true
+
 func (r *ConsoleReader) ReadBlock() (out *bstream.Block, err error) {
+	// if firstBlock {
+	// 	firstBlock = false
+	// 	return nil, fmt.Errorf("failing early")
+	// }
+
 	block, err := r.next()
 	if err != nil {
 		return nil, err
@@ -145,8 +152,9 @@ func (r *ConsoleReader) next() (out *pbacme.Block, err error) {
 		case LogBeginBlock:
 			err = r.blockBegin(tokens[1:])
 		case LogEndBlock:
+			return nil, fmt.Errorf("testing double close")
 			// This end the execution of the reading loop as we have a full block here
-			return r.ctx.readBlockEnd(tokens[1:])
+			// return r.ctx.readBlockEnd(tokens[1:])
 		default:
 			if r.logger.Core().Enabled(zap.DebugLevel) {
 				r.logger.Debug("skipping unknown deep mind log line", zap.String("line", line))
