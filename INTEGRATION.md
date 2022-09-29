@@ -26,8 +26,8 @@ chain specific and by convention, we name is "firehose-<chain-name>". Though thi
 is standardized and is quite similar from chain to chain. For convenience, we have create a boiler plate app to help you get started.
 We named our chain `Acme` this the app is [firehose-acme](https://github.com/streamingfast/firehose-acme)
 
-*DeepMind*
-`Deepmind` consist of an instrumented syncing node. We have created a "dummy" chain to simulate a node process syncing that can be found [https://github.com/streamingfast/dummy-blockchain](https://github.com/streamingfast/dummy-blockchain).
+*Firehose Logs*
+Firehose logs consist of an instrumented syncing node. We have created a "dummy-blockchain" chain to simulate a node process syncing that can be found [https://github.com/streamingfast/dummy-blockchain](https://github.com/streamingfast/dummy-blockchain).
 
 ## Setting up the dummy chain
 
@@ -37,23 +37,17 @@ git clone https://github.com/streamingfast/dummy-blockchain.git
 cd dummy-blockchain
 ```
 
-Install dependencies:
-
-```bash
-go mod download
-```
-
 Then build the binary:
 ```bash
-make build
+go install ./cmd/dummy-blockchain
 ```
 
 Ensure the build was successful
 ```bash
-./dchain --version
+./dummy-blockchain --version
 ```
 
-Take note of the location of the built `dchain` binary, you will need to configure `firehose-acme` with it.
+Take note of the location of the built `dummy-blockchain` binary, you will need to configure `firehose-acme` with it.
 
 ## Setting up firehose-acme
 
@@ -103,6 +97,7 @@ The one-block files and 100-block files will be store in data-dir/storage/merged
 The naming convention of the file is the number of the first block in the file.
 
 As the instrumented node process outputs blocks, you can see the merged block files in the working dir
+
 ```bash
 ls -las ./firehose-data/storage/merged-blocks
 ```
@@ -164,7 +159,9 @@ git add -A .
 git commit -m "Initial commit"
 ```
 
-## Renaming
+## Renaming & Modifications
+
+### Renames
 
 Perform a **case-sensitive** search/replace for the following terms:
 
@@ -173,6 +170,8 @@ Perform a **case-sensitive** search/replace for the following terms:
 - `ACME` -> `<CHAIN>`
 
 > Don't forget to change `<chain>` (and their variants) by the name of your exact chain like `aptos` so it would became `aptos`, `Aptos` and `APTOS` respectively.
+
+> VSCode (and probably others) have a search/replace that respects the original casing of the occurrences found, you can use it to perform a single search/replace of `acme` with the respect original casing option activated.
 
 ### Files
 
@@ -189,6 +188,36 @@ git mv ./tools/fireacme ./tools/fireaptos
 git mv ./types/pb/sf/acme ./types/pb/sf/aptos
 ```
 
+### Node
+
+Doing a Firehose integration means there is an instrumented node that emits Firehose logs (or if not a node directly, definitely a process that reads and emits Firehose logs).
+
+#### [cmd/fireacme/cli/constants.go](cmd/fireacme/cli/constants.go)
+
+- Replace `ChainExecutableName = "dummy-blockchain"` by the `ChainExecutableName = "<binary>"` where `<binary>` is the node's binary name that should be launched.
+
+#### [devel/standard/standard.yaml](devel/standard/standard.yaml)
+
+- Replace `dummy-blockchain` by the node's binary name that should be launched.
+- In string `reader-node-arguments: +--firehose-enabled --block-rate=60` replace `--firehose-enabled --block-rate=60` by the required arguments to launch the Firehose instrumented logs and enable Firehose logs. This will be specific to your chain's integration.
+
+### Dockerfile(s) & GitHub Actions
+
+There is two Docker image created by a build of `firehose-acme`. First, a version described as _vanilla_ where only `fireacme` Golang binary is included and another one described as _bundle_ which includes both the `firacme` binary and the chain's binary that `reader-node` launches.
+
+Here the files that needs to be modified for this. The Dockerfile are all built on Ubuntu 20.04 images.
+
+#### [.github/workflows/docker.yaml](.github/workflows/docker.yaml)
+
+- Replace `ghcr.io/streamingfast/dummy-blockchain` by the node Docker image containing the node's binary (ensures it's an Ubuntu/Debian image you are using).
+- Replace `dummy-blockchain` by the node's binary name.
+
+#### [Dockerfile](Dockerfile)
+
+- Replace `ghcr.io/streamingfast/dummy-blockchain` by the node Docker image containing the node's binary (ensures it's an Ubuntu/Debian image you are using).
+- Replace `dummy-blockchain` by the node's binary name.
+- Change `--from=chain /app/dummy-blockchain` to `--from=chain /<path>/<where>/<node>/<binary>` is.
+
 ### Re-generate Protobuf
 
 Once you have performed the renamed of all 3 terms above and file renames, you should re-generate the Protobuf code:
@@ -199,6 +228,12 @@ cd firehose-<chain>
 ```
 
 > You will require `protoc`, `protoc-gen-go` and `protoc-gen-go-grpc`. The former can be installed following https://grpc.io/docs/protoc-installation/, the last two can be installed respectively with `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0` and `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0`.
+
+### CHANGELOG
+
+The changelog file `CHANGELOG.md` is used as part of GitHub CI Actions to generate the the correct release notes. It works by matching the first `## <version>` Markdown error an accumulating everything up to the following `## <version>` header (if any). It takes the full text of that and uses it as the changelog notes as well as generating the array of built files.
+
+Major information should be listed in there about any public changes that could affect operators.
 
 ### Testing
 

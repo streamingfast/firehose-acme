@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.2
-
 FROM ubuntu:20.04
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -9,16 +7,17 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm -rf /var/cache/apt /var/lib/apt/lists/*
 
 RUN rm /etc/localtime && ln -snf /usr/share/zoneinfo/America/Montreal /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
-
-RUN mkdir /tmp/wasmer-install && cd /tmp/wasmer-install && \
-    curl -L https://github.com/wasmerio/wasmer/releases/download/2.3.0/wasmer-linux-amd64.tar.gz | tar xzf - && \
-    mv lib/libwasmer.a lib/libwasmer.so /usr/lib/ && cd / && rm -rf /tmp/wasmer-install
+RUN mkdir -p /app/ && curl -Lo /app/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.12/grpc_health_probe-linux-amd64 && chmod +x /app/grpc_health_probe
 
 ADD /fireacme /app/fireacme
 
-COPY tools/fireacme/motd_generic /etc/
-COPY tools/fireacme/motd_node_manager /etc/
+COPY tools/fireacme/motd_generic /etc/motd
 COPY tools/fireacme/99-firehose.sh /etc/profile.d/
-COPY tools/fireacme/scripts/* /usr/local/bin
+
+# On SSH connection, /root/.bashrc is invoked which invokes '/root/.bash_aliases' if existing,
+# so we hijack the file to "execute" our specialized bash script
+RUN echo ". /etc/profile.d/99-firehose.sh" > /root/.bash_aliases
+
+ENV PATH "$PATH:/app"
 
 ENTRYPOINT ["/app/fireacme"]
