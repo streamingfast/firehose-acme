@@ -2,12 +2,14 @@ package cli
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	dauthAuthenticator "github.com/streamingfast/dauth/authenticator"
+	discoveryservice "github.com/streamingfast/dgrpc/server/discovery-service"
 	"github.com/streamingfast/dlauncher/launcher"
 	"github.com/streamingfast/dmetering"
 	"github.com/streamingfast/dmetrics"
@@ -31,19 +33,21 @@ func init() {
 		Description: "Provides on-demand filtered blocks, depends on common-merged-blocks-store-url and common-live-blocks-addr",
 		RegisterFlags: func(cmd *cobra.Command) error {
 			cmd.Flags().String("firehose-grpc-listen-addr", FirehoseGRPCServingAddr, "Address on which the firehose will listen")
+			cmd.Flags().String("firehose-discovery-service-url", "", "Url to configure the gRPC discovery service") //traffic-director://xds?vpc_network=vpc-global&use_xds_reds=true
 
 			cmd.Flags().Bool("substreams-enabled", false, "Whether to enable substreams")
 			cmd.Flags().Bool("substreams-partial-mode-enabled", false, "Whether to enable partial stores generation support on this instance (usually for internal deployments only)")
+			cmd.Flags().Bool("substreams-request-stats-enabled", false, "Enables stats per request, like block rate. Should only be enabled in debugging instance not in production")
 			cmd.Flags().String("substreams-state-store-url", "{data-dir}/localdata", "where substreams state data are stored")
-			cmd.Flags().Uint64("substreams-stores-save-interval", uint64(1_000), "Interval in blocks at which to save store snapshots")     // fixme
-			cmd.Flags().Uint64("substreams-output-cache-save-interval", uint64(100), "Interval in blocks at which to save store snapshots") // fixme
-			cmd.Flags().Int("substreams-parallel-subrequest-limit", 4, "number of parallel subrequests substream can make to synchronize its stores")
+			cmd.Flags().Uint64("substreams-cache-save-interval", uint64(1_000), "Interval in blocks at which to save store snapshots and output caches")
+			cmd.Flags().Uint64("substreams-max-fuel-per-block-module", uint64(5_000_000_000_000), "Hard limit for the number of instructions within the execution of a single wasmtime module for a single block")
+			cmd.Flags().Int("substreams-parallel-subrequest-limit", 4, "Number of parallel subrequests substream can make to synchronize its stores")
 			cmd.Flags().String("substreams-client-endpoint", "", "Firehose endpoint for substreams client, if left empty, will default to this current local firehose.")
 			cmd.Flags().String("substreams-client-jwt", "", "JWT for substreams client authentication")
 			cmd.Flags().Bool("substreams-client-insecure", false, "Substreams client in insecure mode")
 			cmd.Flags().Bool("substreams-client-plaintext", true, "Substreams client in plaintext mode")
-			cmd.Flags().Int("substreams-sub-request-parallel-jobs", 5, "Substreams subrequest parallel jobs for the scheduler")
-			cmd.Flags().Int("substreams-sub-request-block-range-size", 1000, "Substreams subrequest block range size value for the scheduler")
+			cmd.Flags().Uint64("substreams-sub-request-parallel-jobs", 5, "Substreams subrequest parallel jobs for the scheduler")
+			cmd.Flags().Uint64("substreams-sub-request-block-range-size", 10000, "Substreams subrequest block range size value for the scheduler")
 			return nil
 		},
 
@@ -61,6 +65,19 @@ func init() {
 			}
 			dmetering.SetDefaultMeter(metering)
 
+			rawServiceDiscoveryURL := viper.GetString("firehose-discovery-service-url")
+			var serviceDiscoveryURL *url.URL
+			if rawServiceDiscoveryURL != "" {
+				serviceDiscoveryURL, err = url.Parse(rawServiceDiscoveryURL)
+				if err != nil {
+					return nil, fmt.Errorf("unable to parse discovery service url: %w", err)
+				}
+				err = discoveryservice.Bootstrap(serviceDiscoveryURL)
+				if err != nil {
+					return nil, fmt.Errorf("unable to bootstrap discovery service: %w", err)
+				}
+			}
+
 			var registerServiceExt firehoseApp.RegisterServiceExtensionFunc
 			if viper.GetBool("substreams-enabled") {
 				stateStore, err := dstore.NewStore(MustReplaceDataDir(sfDataDir, viper.GetString("substreams-state-store-url")), "", "", true)
@@ -69,8 +86,8 @@ func init() {
 				}
 
 				opts := []substreamsService.Option{
-					substreamsService.WithStoresSaveInterval(viper.GetUint64("substreams-stores-save-interval")),
-					substreamsService.WithOutCacheSaveInterval(viper.GetUint64("substreams-output-cache-save-interval")),
+					substreamsService.WithCacheSaveInterval(viper.GetUint64("substreams-cache-save-interval")),
+					substreamsService.WithMaxWasmFuelPerBlockModule(viper.GetUint64("substreams-max-fuel-per-block-module")),
 				}
 
 				if viper.GetBool("substreams-partial-mode-enabled") {
@@ -91,9 +108,9 @@ func init() {
 
 				sss, err := substreamsService.New(
 					stateStore,
-					"sf.aptos.type.v1.Block",
-					viper.GetInt("substreams-sub-request-parallel-jobs"),
-					viper.GetInt("substreams-sub-request-block-range-size"),
+					"sf.acme.type.v1",
+					viper.GetUint64("substreams-sub-request-parallel-jobs"),
+					viper.GetUint64("substreams-sub-request-block-range-size"),
 					clientConfig,
 					opts...,
 				)
@@ -110,6 +127,7 @@ func init() {
 				BlockStreamAddr:         viper.GetString("common-live-blocks-addr"),
 				GRPCListenAddr:          viper.GetString("firehose-grpc-listen-addr"),
 				GRPCShutdownGracePeriod: 1 * time.Second,
+				ServiceDiscoveryURL:     serviceDiscoveryURL,
 			}, &firehoseApp.Modules{
 				Authenticator:            authenticator,
 				HeadTimeDriftMetric:      headTimeDriftmetric,
