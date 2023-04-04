@@ -3,7 +3,6 @@ package nodemanager
 import (
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/ShinyTrinkets/overseer"
 	nodeManager "github.com/streamingfast/node-manager"
@@ -16,7 +15,7 @@ import (
 type Superviser struct {
 	*superviser.Superviser
 
-	infoMutex           sync.Mutex
+	chainShortName      string
 	binary              string
 	arguments           []string
 	dataDir             string
@@ -27,10 +26,11 @@ type Superviser struct {
 }
 
 func (s *Superviser) GetName() string {
-	return "acme"
+	return s.chainShortName
 }
 
 func NewSuperviser(
+	chainShortName string,
 	binary string,
 	arguments []string,
 	dataDir string,
@@ -39,13 +39,14 @@ func NewSuperviser(
 	logToZap bool,
 	appLogger *zap.Logger,
 	nodelogger *zap.Logger,
-) *Superviser {
+) (nodeManager.ChainSuperviser, error) {
 	// Ensure process manager line buffer is large enough (50 MiB) for our Deep Mind instrumentation outputting lot's of text.
 	overseer.DEFAULT_LINE_BUFFER_SIZE = 50 * 1024 * 1024
 
 	supervisor := &Superviser{
 		Superviser:          superviser.New(appLogger, binary, arguments),
 		Logger:              appLogger,
+		chainShortName:      chainShortName,
 		binary:              binary,
 		arguments:           arguments,
 		dataDir:             dataDir,
@@ -61,7 +62,7 @@ func NewSuperviser(
 	}
 
 	appLogger.Info("created acme superviser", zap.Object("superviser", supervisor))
-	return supervisor
+	return supervisor, nil
 }
 
 func (s *Superviser) GetCommand() string {

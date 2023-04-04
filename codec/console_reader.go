@@ -12,6 +12,8 @@ import (
 	"github.com/streamingfast/bstream"
 	"github.com/streamingfast/firehose-acme/types"
 	pbacme "github.com/streamingfast/firehose-acme/types/pb/sf/acme/type/v1"
+	"github.com/streamingfast/logging"
+	"github.com/streamingfast/node-manager/mindreader"
 	"go.uber.org/zap"
 )
 
@@ -25,19 +27,20 @@ type ConsoleReader struct {
 	done chan interface{}
 
 	logger *zap.Logger
+	tracer logging.Tracer
 }
 
-func NewConsoleReader(logger *zap.Logger, lines chan string) (*ConsoleReader, error) {
-	l := &ConsoleReader{
+func NewConsoleReader(lines chan string, logger *zap.Logger, tracer logging.Tracer) (mindreader.ConsolerReader, error) {
+	return &ConsoleReader{
 		lines:  lines,
 		close:  func() {},
 		done:   make(chan interface{}),
 		logger: logger,
-	}
-	return l, nil
+		tracer: tracer,
+	}, nil
 }
 
-//todo: WTF?
+// todo: WTF?
 func (r *ConsoleReader) Done() <-chan interface{} {
 	return r.done
 }

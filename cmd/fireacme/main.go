@@ -1,43 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-	"time"
-
-	"github.com/streamingfast/firehose-acme/cmd/fireacme/cli"
+	"github.com/streamingfast/firehose-acme/codec"
+	nodemanager "github.com/streamingfast/firehose-acme/nodemanager"
+	firecore "github.com/streamingfast/firehose-core"
 )
-
-// Commit sha1 value, injected via go build `ldflags` at build time
-var commit = ""
 
 // Version value, injected via go build `ldflags` at build time
 var version = "dev"
 
-// Date value, injected via go build `ldflags` at build time
-var date = time.Now().Format(time.RFC3339)
-
-func init() {
-	cli.RootCmd.Version = versionString()
-}
-
 func main() {
-	cli.Main()
-}
+	firecore.Main(&firecore.Chain{
+		ShortName:            "acme",
+		LongName:             "Acme",
+		ExecutableName:       "dummy-blockchain",
+		FullyQualifiedModule: "github.com/streamingfast/firehose-acme",
 
-func versionString() string {
-	var labels []string
-	if len(commit) >= 7 {
-		labels = append(labels, fmt.Sprintf("Commit %s", commit[0:7]))
-	}
+		Version: version,
 
-	if date != "" {
-		labels = append(labels, fmt.Sprintf("Built %s", date))
-	}
+		FirstStreamableBlock:                   1,
+		BlockDifferenceThresholdConsideredNear: 15,
 
-	if len(labels) == 0 {
-		return version
-	}
+		ConsoleReaderFactory:   codec.NewConsoleReader,
+		ChainSuperviserFactory: nodemanager.NewSuperviser,
 
-	return fmt.Sprintf("%s (%s)", version, strings.Join(labels, ", "))
+		Tools: &firecore.ToolsConfig{
+			BlockPrinter: printBlock,
+		},
+	})
 }
