@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/streamingfast/firehose-acme/codec"
-	nodemanager "github.com/streamingfast/firehose-acme/nodemanager"
 	firecore "github.com/streamingfast/firehose-core"
 )
 
@@ -21,8 +20,7 @@ func main() {
 		FirstStreamableBlock:                   1,
 		BlockDifferenceThresholdConsideredNear: 15,
 
-		ConsoleReaderFactory:   codec.NewConsoleReader,
-		ChainSuperviserFactory: nodemanager.NewSuperviser,
+		ConsoleReaderFactory: codec.NewConsoleReader,
 
 		Tools: &firecore.ToolsConfig{
 			BlockPrinter: printBlock,

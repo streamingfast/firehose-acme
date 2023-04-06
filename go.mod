@@ -6,9 +6,9 @@ require (
 	github.com/ShinyTrinkets/overseer v0.3.0
 	github.com/streamingfast/bstream v0.0.2-0.20230228213106-2b6a3160e01e
 	github.com/streamingfast/firehose-acme/types v0.0.0-20230331151947-6e80323c0c26
-	github.com/streamingfast/firehose-core v0.0.1
+	github.com/streamingfast/firehose-core v0.0.2-0.20230406142804-7162f7bcbbcc
 	github.com/streamingfast/logging v0.0.0-20221209193439-bff11742bf4c
-	github.com/streamingfast/node-manager v0.0.2-0.20221115101723-d9823ffd7ad5
+	github.com/streamingfast/node-manager v0.0.2-0.20230406142433-692298a8b8d2
 	github.com/stretchr/testify v1.8.1
 	go.uber.org/zap v1.21.0
 )
@@ -166,4 +166,5 @@ require (
 replace (
 	github.com/ShinyTrinkets/overseer => github.com/streamingfast/overseer v0.2.1-0.20210326144022-ee491780e3ef
 	github.com/bytecodealliance/wasmtime-go/v4 => github.com/streamingfast/wasmtime-go/v4 v4.0.0-freemem3
+
 )
