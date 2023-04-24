@@ -229,6 +229,15 @@ cd firehose-<chain>
 
 > You will require `protoc`, `protoc-gen-go` and `protoc-gen-go-grpc`. The former can be installed following https://grpc.io/docs/protoc-installation/, the last two can be installed respectively with `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0` and `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0`.
 
+A quirks of the current setup is that `types` folder is actually a dedicated Golang module separated from the main module. This creates some small problem when updating the `types` dependency within the main module. Here the steps to do it.
+
+1. `git add -A types`
+1. `git commit -m "Re-generated Protobuf types"`
+1. `git push`
+1. `go get github.com/streamingfast/firehose-acme/types@master`
+
+Now the main module has its `types` dependency updated with the newly generated Golang Protobuf code.
+
 ### CHANGELOG
 
 The changelog file `CHANGELOG.md` is used as part of GitHub CI Actions to generate the the correct release notes. It works by matching the first `## <version>` Markdown error an accumulating everything up to the following `## <version>` header (if any). It takes the full text of that and uses it as the changelog notes as well as generating the array of built files.
