@@ -58,7 +58,7 @@ git clone git@github.com:streamingfast/firehose-acme.git
 cd firehose-acme
 ```
 
-Configure firehose test etup
+Configure firehose test setup
 
 ```bash
 cd devel/standard/
@@ -154,7 +154,6 @@ While not required, I suggest to create an initial commit so it's easier to reve
 or delete a wrong file:
 
 ```
-cd firehose-<chain>
 git add -A .
 git commit -m "Initial commit"
 ```
@@ -163,15 +162,31 @@ git commit -m "Initial commit"
 
 ### Renames
 
-Perform a **case-sensitive** search/replace for the following terms:
+Perform a **case-sensitive** search/replace for the following terms, order is important:
 
-- `acme` -> `<chain>`
-- `Acme` -> `<Chain>`
-- `ACME` -> `<CHAIN>`
+- `github.com/streamingfast/firehose-acme` -> `github.com/<owner>/firehose-<chain>`
+- `ghcr.io/streamingfast/firehose-acme` -> `ghcr.io/<owner>/firehose-<chain>`
+- `owner: streamingfast` -> `owner: <owner>`
+- `fireacme` -> `fire<chain_short>` (for the final binary produced)
+- `acme` -> `<chain>` (for variable, identifier and other place not meant for display, `camelCase`)
+- `Acme` -> `<Chain>` (for title(s) and display of chain's full name, `titleCase`)
+- `ACME` -> `<CHAIN>` (for constants)
 
-> Don't forget to change `<chain>` (and their variants) by the name of your exact chain like `aptos` so it would became `aptos`, `Aptos` and `APTOS` respectively.
+> **Note** Don't forget to change `<chain>` (and their variants) by the name of your exact chain like `aptos` so it would became `aptos`, `Aptos` and `APTOS` respectively. The `<chain_short>` should be a shorter version if `<chain>` if you find it too long or have a known short version of it. For example, `ethereum` `<chain_short>` is actually `eth` while `NEAR` chain is the same as `<chain>` so `near`. The `<owner>` value needs to be replaced by GitHub organisation/user that is going to host the `firehose-<chain>` repository, for example if `firehose-aptos` is going to be hosted at `github.com/aptos-core/firehose-aptos`, the `<owner>` here would be `aptos-core`.
 
-> VSCode (and probably others) have a search/replace that respects the original casing of the occurrences found, you can use it to perform a single search/replace of `acme` with the respect original casing option activated.
+#### Using [sd](https://github.com/chmln/sd)
+
+Here the commands to perform the replacement if you have installed (or install) `sd` tool:
+
+- `find . -type f -not -path "./.git/*" -exec sd -f c "github.com/streamingfast/firehose-acme" "github.com/<owner>/firehose-<chain>" {} \;`
+- `find . -type f -not -path "./.git/*" -exec sd -f c "ghcr.io/streamingfast/firehose-acme" "ghcr.io/<owner>/firehose-<chain>" {} \;`
+- `find . -type f -not -path "./.git/*" -exec sd -f c "owner: streamingfast" "owner: <owner>" {} \;`
+- `find . -type f -not -path "./.git/*" -exec sd -f c fireacme fire<chain_short> {} \;`
+- `find . -type f -not -path "./.git/*" -exec sd -f c acme <chain> {} \;`
+- `find . -type f -not -path "./.git/*" -exec sd -f c Acme <Chain> {} \;`
+- `find . -type f -not -path "./.git/*" -exec sd -f c ACME <CHAIN> {} \;`
+
+> **Warning** Don't forget to chain `<owner>`, `<chain>` and `<chain_short>` by respectively your own GitHub organisation/user, chain name and its shorter name (or same as chain if short already).
 
 ### Files
 
@@ -185,8 +200,49 @@ git mv ./tools/fireacme/scripts/acme-command ./tools/fireacme/scripts/aptos-comm
 git mv ./tools/fireacme/scripts/acme-debug-firehose-logs-30s ./tools/fireacme/scripts/aptos-debug-deep-mind-30s
 git mv ./tools/fireacme/scripts/acme-maintenance ./tools/fireacme/scripts/aptos-maintenance
 git mv ./tools/fireacme ./tools/fireaptos
+git mv ./proto/sf/acme ./proto/sf/aptos
 git mv ./types/pb/sf/acme ./types/pb/sf/aptos
 ```
+
+### Re-generate Protobuf
+
+Once you have performed the renamed of all 3 terms above and file renames, you should re-generate the Protobuf code:
+
+```
+cd firehose-<chain>
+./types/pb/generate.sh
+```
+
+> **Note**  You will require `protoc`, `protoc-gen-go` and `protoc-gen-go-grpc`. The former can be installed following https://grpc.io/docs/protoc-installation/, the last two can be installed respectively with `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0` and `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0`.
+
+> **Note** If you see the error message `Could not make proto path relative: sf/<chain>/type/v1/type.proto: No such file or directory`, you probably forgot to renamed `proto/sf/acme` to `proto/sf/<chain>`.
+
+### Commit & Compile
+
+It's time to test our previous steps to ensure it compiles and everything is good. At this point, you need to have the repository created on GitHub, so go ahead, create the repository on GitHub and push the first initial commit we had before performing the modifications.
+
+#### Update `types` dependency
+
+A quirks of the current setup is that `types` folder is actually a dedicated Golang module separated from the main module. This creates some small problem when updating the `types` dependency within the main module. First, ensure that `types` compile:
+
+```
+cd types
+go test ./...
+cd ..
+```
+
+Everything should be good, ensure you have perform all the renames. Here the steps to do then update the `types` dependency in the core project.
+
+1. `git add -A types`
+1. `git commit -m "Re-generated Protobuf types"`
+1. `git push`
+1. Remove the line starting with `github.com/<owner>/firehose-<chain>/types` from the `go.mod` file
+1. `go get github.com/<owner>/firehose-<chain>/types@master`
+1. Test everything with `go test ./...`, that should pass now.
+
+Now the main module has its `types` dependency updated with the newly generated Golang Protobuf code.
+
+> **Note** Change `<owner>` and `firehose-<chain>` by correct values where you project is hosted at.
 
 ### Node
 
@@ -217,30 +273,6 @@ Here the files that needs to be modified for this. The Dockerfile are all built 
 - Replace `ghcr.io/streamingfast/dummy-blockchain` by the node Docker image containing the node's binary (ensures it's an Ubuntu/Debian image you are using).
 - Replace `dummy-blockchain` by the node's binary name.
 - Change `--from=chain /app/dummy-blockchain` to `--from=chain /<path>/<where>/<node>/<binary>` is.
-
-### Re-generate Protobuf
-
-Once you have performed the renamed of all 3 terms above and file renames, you should re-generate the Protobuf code:
-
-```
-cd firehose-<chain>
-./types/pb/generate.sh
-```
-
-> **Note**  You will require `protoc`, `protoc-gen-go` and `protoc-gen-go-grpc`. The former can be installed following https://grpc.io/docs/protoc-installation/, the last two can be installed respectively with `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0` and `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0`.
-
-> **Note** If you see the error message `Could not make proto path relative: sf/<chain>/type/v1/type.proto: No such file or directory`, you probably forgot to renamed `proto/sf/acme` to `proto/sf/<chain>`.
-
-#### Update `types` dependency
-
-A quirks of the current setup is that `types` folder is actually a dedicated Golang module separated from the main module. This creates some small problem when updating the `types` dependency within the main module. Here the steps to do it.
-
-1. `git add -A types`
-1. `git commit -m "Re-generated Protobuf types"`
-1. `git push`
-1. `go get github.com/streamingfast/firehose-acme/types@master`
-
-Now the main module has its `types` dependency updated with the newly generated Golang Protobuf code.
 
 ### CHANGELOG
 
