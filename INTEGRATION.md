@@ -227,7 +227,11 @@ cd firehose-<chain>
 ./types/pb/generate.sh
 ```
 
-> You will require `protoc`, `protoc-gen-go` and `protoc-gen-go-grpc`. The former can be installed following https://grpc.io/docs/protoc-installation/, the last two can be installed respectively with `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0` and `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0`.
+> **Note**  You will require `protoc`, `protoc-gen-go` and `protoc-gen-go-grpc`. The former can be installed following https://grpc.io/docs/protoc-installation/, the last two can be installed respectively with `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0` and `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0`.
+
+> **Note** If you see the error message `Could not make proto path relative: sf/<chain>/type/v1/type.proto: No such file or directory`, you probably forgot to renamed `proto/sf/acme` to `proto/sf/<chain>`.
+
+#### Update `types` dependency
 
 A quirks of the current setup is that `types` folder is actually a dedicated Golang module separated from the main module. This creates some small problem when updating the `types` dependency within the main module. Here the steps to do it.
 
