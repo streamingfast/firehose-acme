@@ -6,11 +6,21 @@
 
 ## Release
 
-Use the `./bin/release.sh` Bash script to perform a new release. It will ask you questions
-as well as driving all the required commands, performing the necessary operation automatically.
-The Bash script runs in dry-mode by default, so you can check first that everything is all right.
+Use https://github.com/streamingfast/sfreleaser to perform a new release. You can install from source https://github.com/streamingfast/sfreleaser/releases downloading the binary.
 
-Releases are performed using [goreleaser](https://goreleaser.com/).
+However if for now suggest to install from source (the tool `sfreleaser` is still getting fixes/features):
+
+```bash
+go install github.com/streamingfast/sfreleaser@latest
+```
+
+It will ask you questions as well as driving all the required commands, performing the necessary operation automatically. The release is pushed in draft mode by default, so you can test check the whole flow before publishing (See configuration file [.sfreleaser](./.sfreleaser) for some extra details).
+
+You will need to have for releases:
+- [Docker](https://docs.docker.com/get-docker/) installed and running
+- [GitHub CLI tool](https://cli.github.com/) installed and authenticated with GitHub
+
+The `sfreleaser` binary checks that those tools exist before doing any work.
 
 ## Contributing
 
