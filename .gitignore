@@ -19,6 +19,7 @@
 *.spkg
 
 /fireacme
+/build
 /dist
 
 firehose-data

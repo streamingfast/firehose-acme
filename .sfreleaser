@@ -1,0 +1,4 @@
+global:
+  binary: cmd/fireacm
+  language: golang
+  variant: application
