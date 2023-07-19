@@ -11,10 +11,10 @@ RUN mkdir -p /app/ && curl -Lo /app/grpc_health_probe https://github.com/grpc-ec
 
 ADD /fireacme /app/fireacme
 
-COPY tools/fireacme/motd_generic /etc/motd
-COPY tools/fireacme/99-firehose.sh /etc/profile.d/
+COPY tools/docker/motd_generic /etc/motd
+COPY tools/docker/99-firehose.sh /etc/profile.d/
 
-# On SSH connection, /root/.bashrc is invoked which invokes '/root/.bash_aliases' if existing,
+# On SSH connection, /root/.bashrc is invoked which invokes '/root/.bash_aliases' if it exists,
 # so we hijack the file to "execute" our specialized bash script
 RUN echo ". /etc/profile.d/99-firehose.sh" > /root/.bash_aliases
 
