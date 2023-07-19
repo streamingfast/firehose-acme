@@ -58,14 +58,14 @@ git clone git@github.com:streamingfast/firehose-acme.git
 cd firehose-acme
 ```
 
-Configure firehose test etup
+Configure firehose test setup
 
 ```bash
 cd devel/standard/
 vi standard.yaml
 ```
 
-modify the flag `reader-node-path: "dchain"` to point to the path of your `dchain` binary you compiled above
+modify the flag `reader-node-path: "dummy-blockchain"` to point to the path of your `dummy-blockchain` binary you compiled above
 
 ## Starting and testing Firehose
 

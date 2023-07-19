@@ -1,0 +1,10 @@
+global:
+  binary: fireacme
+  language: golang
+  variant: application
+  sfreleaser-min-version: v0.7.0
+release:
+  pre-build-hooks:
+    - substreams pack -o "{{ .buildDir }}/substreams-acme-{{ .release.Version }}.spkg" substreams.yaml
+  upload-extra-assets:
+    - "{{ .buildDir }}/substreams-acme-{{ .release.Version }}.spkg"

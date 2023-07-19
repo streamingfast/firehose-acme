@@ -17,13 +17,12 @@ func main() {
 		Protocol:        "ACM",
 		ProtocolVersion: 1,
 
-		FirstStreamableBlock:                   1,
-		BlockDifferenceThresholdConsideredNear: 15,
+		FirstStreamableBlock: 1,
 
 		BlockFactory:         func() firecore.Block { return new(pbacme.Block) },
 		ConsoleReaderFactory: codec.NewConsoleReader,
 
-		Tools: &firecore.ToolsConfig{
+		Tools: &firecore.ToolsConfig[*pbacme.Block]{
 			BlockPrinter: printBlock,
 		},
 	})
