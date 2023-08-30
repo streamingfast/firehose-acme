@@ -13,7 +13,7 @@ The data structures needs to represent as precisely as possible the on chain dat
 The data model need.
 
 As a reference, here is Ethereum's Protobuf Structure:
-[https://github.com/streamingfast/firehose-ethereum/blob/develop/sf/ethereum/codec/v1/codec.proto](https://github.com/streamingfast/firehose-ethereum/blob/develop/proto/sf/ethereum/type/v2/type.proto)
+[https://github.com/streamingfast/firehose-ethereum/blob/develop/proto/sf/ethereum/type/v2/type.proto](https://github.com/streamingfast/firehose-ethereum/blob/develop/proto/sf/ethereum/type/v2/type.proto)
 
 # Running the Demo Chain
 
