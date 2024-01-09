@@ -4,12 +4,19 @@ package sf.acme.type.v1;
 
 option go_package = "github.com/streamingfast/firehose-acme/pb/sf/acme/type/v1;pbacme";
 
-message Block {
+message BlockHeader {
   uint64 height = 1;
   string hash = 2;
-  string prevHash = 3;
-  uint64 timestamp = 4;
-  repeated Transaction transactions = 5;
+  optional uint64 previous_num = 3;
+  optional string previous_hash = 4;
+  uint64 final_num = 5;
+  string final_hash = 6;
+  uint64 timestamp = 7;
+}
+
+message Block {
+  BlockHeader header = 1;
+  repeated Transaction transactions = 2;
 }
 
 message Transaction {

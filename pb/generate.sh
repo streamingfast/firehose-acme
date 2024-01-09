@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../.. && pwd )"
+ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 
 # Protobuf definitions
 PROTO_ACME=${2:-"$ROOT/proto"}
@@ -22,7 +22,7 @@ function main() {
   checks
 
   set -e
-  cd "$ROOT/types/pb" &> /dev/null
+  cd "$ROOT/pb" &> /dev/null
 
   generate "sf/acme/type/v1/type.proto"
 
@@ -42,7 +42,6 @@ function generate() {
     for file in "$@"; do
       protoc -I$PROTO_ACME \
         --go_out=. --go_opt=paths=source_relative \
-        --go-grpc_out=. --go-grpc_opt=paths=source_relative,require_unimplemented_servers=false \
          $base$file
     done
 }
