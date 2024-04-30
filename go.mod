@@ -1,11 +1,10 @@
 module github.com/streamingfast/firehose-acme
 
-go 1.22
-
-toolchain go1.22.0
+go 1.22.0
 
 require (
-	github.com/streamingfast/firehose-core v1.3.6
+	github.com/streamingfast/firehose-core v1.3.8-0.20240430203601-dd8bcde3cf41
+	github.com/streamingfast/payment-gateway v0.0.0-20240426151444-581e930c76e2
 	google.golang.org/protobuf v1.33.0
 )
 
@@ -17,7 +16,7 @@ require (
 	cloud.google.com/go/monitoring v1.18.0 // indirect
 	cloud.google.com/go/storage v1.38.0 // indirect
 	cloud.google.com/go/trace v1.10.5 // indirect
-	connectrpc.com/connect v1.15.0 // indirect
+	connectrpc.com/connect v1.16.1 // indirect
 	connectrpc.com/grpchealth v1.3.0 // indirect
 	connectrpc.com/grpcreflect v1.2.0 // indirect
 	connectrpc.com/otelconnect v0.7.0 // indirect
@@ -146,20 +145,20 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.15.0 // indirect
-	github.com/streamingfast/bstream v0.0.2-0.20240409115502-d29a2fb46f37 // indirect
+	github.com/streamingfast/bstream v0.0.2-0.20240430194002-d05d5d5d6c93 // indirect
 	github.com/streamingfast/cli v0.0.4-0.20240412191021-5f81842cb71d // indirect
 	github.com/streamingfast/dauth v0.0.0-20240222213226-519afc16cf84 // indirect
 	github.com/streamingfast/dbin v0.9.1-0.20231117225723-59790c798e2c // indirect
 	github.com/streamingfast/derr v0.0.0-20230515163924-8570aaa43fe1 // indirect
-	github.com/streamingfast/dgrpc v0.0.0-20240222213940-b9f324ff4d5c // indirect
-	github.com/streamingfast/dmetering v0.0.0-20240409120340-b517f0225538 // indirect
+	github.com/streamingfast/dgrpc v0.0.0-20240423143010-f36784700c9a // indirect
+	github.com/streamingfast/dmetering v0.0.0-20240422183130-658027cbb7a1 // indirect
 	github.com/streamingfast/dmetrics v0.0.0-20230919161904-206fa8ebd545 // indirect
 	github.com/streamingfast/dstore v0.1.1-0.20240325191553-bcce8892a9bb // indirect
 	github.com/streamingfast/dtracing v0.0.0-20220305214756-b5c0e8699839 // indirect
 	github.com/streamingfast/jsonpb v0.0.0-20210811021341-3670f0aa02d0 // indirect
 	github.com/streamingfast/logging v0.0.0-20230608130331-f22c91403091 // indirect
 	github.com/streamingfast/opaque v0.0.0-20210811180740-0c01d37ea308 // indirect
-	github.com/streamingfast/pbgo v0.0.6-0.20240131193313-6b88bc7139db // indirect
+	github.com/streamingfast/pbgo v0.0.6-0.20240430190514-722fe9d82e5d // indirect
 	github.com/streamingfast/sf-tracing v0.0.0-20240209202324-9daa52c71a52 // indirect
 	github.com/streamingfast/shutter v1.5.0 // indirect
 	github.com/streamingfast/snapshotter v0.0.0-20230316190750-5bcadfde44d0 // indirect
