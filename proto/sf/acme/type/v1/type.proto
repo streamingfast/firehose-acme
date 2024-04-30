@@ -11,7 +11,7 @@ message BlockHeader {
   optional string previous_hash = 4;
   uint64 final_num = 5;
   string final_hash = 6;
-  uint64 timestamp = 7;
+  int64 timestamp = 7;
 }
 
 message Block {
