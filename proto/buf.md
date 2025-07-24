@@ -1,6 +1,6 @@
 ### StreamingFast Firehose Acme Types
 
-Protobuf definitions when dealing with Firehose Acme chain(s) like Acme Mainnet and Acme Testnet.
+Protobuf definitions for the Firehose Acme chain and the `dummy-blockchain`, both used to show operators how to run the Firehose stack and integrator how a chain's integration could look like.
 
 Foremost, this provides [sf.acme.types.v1.Block](https://buf.build/streamingfast/firehose-acme/docs/main:sf.acme.type.v1#sf.acme.type.v1.Block) which is used for consuming Firehose & Substreams Acme block model.
 
