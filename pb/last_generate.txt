@@ -1,2 +1,2 @@
-generate.sh - Tue Apr 30 16:27:32 EDT 2024 - maoueh
-streamingfast/firehose-acme/proto revision: b03c6d4
+generate.sh - Wed Dec 31 00:11:09 EST 2025 - maoueh
+streamingfast/firehose-acme/proto revision: f26510c

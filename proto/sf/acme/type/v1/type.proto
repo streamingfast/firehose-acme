@@ -24,6 +24,7 @@ message Transaction {
   string hash = 2;
   string sender = 3;
   string receiver = 4;
+  bytes data = 9;
   BigInt amount = 5;
   BigInt fee = 6;
   bool success = 7;
